@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aarohcare-backend:latest
+    container_name: aarohcare-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - PORT=${PORT:-4000}
+      - NODE_ENV=${NODE_ENV:-production}
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/aarohcare}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - aarohcare-net
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:' + (process.env.PORT || 4000) + '/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  mongodb:
+    image: mongo:7
+    container_name: aarohcare-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - aarohcare-net
+
+volumes:
+  mongo-data:
+    driver: local
+
+networks:
+  aarohcare-net:
+    driver: bridge

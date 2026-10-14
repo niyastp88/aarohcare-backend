@@ -1,0 +1,39 @@
+# ==============================================================================
+# AarohCare Backend — Production Docker Compose for DigitalOcean
+#
+# Production Characteristics:
+# 1. Connects directly to external MongoDB Atlas (no redundant local database container).
+# 2. Configures a 15-second stop_grace_period to support graceful HTTP and Socket.IO draining.
+# 3. Uses container health check against the lightweight /api/health endpoint.
+# ==============================================================================
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aarohcare-backend:latest
+    container_name: aarohcare-backend
+    restart: unless-stopped
+    stop_grace_period: 15s
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      - PORT=${PORT:-4000}
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:' + (process.env.PORT || 4000) + '/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - aarohcare-prod-net
+
+networks:
+  aarohcare-prod-net:
+    driver: bridge

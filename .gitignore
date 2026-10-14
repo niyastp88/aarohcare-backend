@@ -1,0 +1,45 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+build/
+coverage/
+
+# env / secrets (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# logs / debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local scripts (seed, one-off fixes — do not push)
+scripts/*
+src/scripts/*
+**/scripts/*
+!scripts/migrateAppointmentTokenIndex.ts
+*.seed.ts
+*-seed.ts
+fix-*.js
+fix-*.js
+
+# editor / IDE / Cursor
+.cursor/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# TypeScript / tooling
+*.tsbuildinfo
+.eslintcache
